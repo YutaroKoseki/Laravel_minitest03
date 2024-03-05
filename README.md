@@ -1,42 +1,88 @@
-# 問題: Laravel Breezeを使用したログイン機能のカスタマイズ
-
-あなたは、Laravel Breezeを使って構築された新しいLaravelアプリケーションにおいて、既存のログイン機能をカスタマイズしたいと考えています。
-
-具体的には、ユーザーがログインに失敗した際に表示されるエラーメッセージをカスタマイズし、さらにログイン成功後のリダイレクト先をデフォルトのダッシュボードページから異なるページに変更したいと思っています。
-
-このカスタマイズを実装するためのステップを説明してください。
+## 【小テスト】Laravelの教科書　CHAPTER3 Laravelの仕組み
 
 
-## 「エラーメッセージ」のカスタマイズ手順
+## 問題1: ルーティングとコントローラー
 
-エラーメッセージのカスタマイズ方法はいくつかあると思うが、今回は「日本語化」と捉えて、その方法を。
+Laravelにおいて、ウェブアプリケーションでユーザーからのリクエストを受け取り、特定のコントローラーのアクションにルーティングする基本的な方法を説明してください。
 
-### config/app.phpの編集
+また、/productsというURLにGETリクエストが来た時にProductControllerのindexメソッドを呼び出すルーティングを設定するコード例を書いてください。
 
-・'local' => en, を　'local' => ja　に変更
+### 説明
 
-・Laravel v10を使用しているため、「artisan lang:publish」で言語ファイルを作成
+基本的に `routes/web.php` ファイルでルートを定義する。
 
-・ルート/lang/en をコピーして、jaディレクトリを、ルート/lang/に ja.jsonを作成
+特定のコントローラーのアクションにルーティングするには、ルートにコントローラー名とアクション名を記載する
 
-・「composer require askdkc/breezejp --dev」「artisan breezejp」を実行して、Laravel Breezeを日本語化。
+仮に、userコントローラーのshowアクションへのルーティングの場合
+
+````
+Route::get('/user', [UserController::class, 'show']);
+````
+
+のようになる。
+
+
+### ProductControllerのindexメソッドへのルーティングのコード例
+
+・routes/web.php　に以下を追加
+````
+use App\Http\Controllers\ProductController;
+
+...
+
+Route::get('/products',[ProductController::class, 'index']);
+
+````
+
+## 問題2: ビューとデータの受け渡し
+Laravelにおいて、コントローラーからビューにデータを渡す一般的な方法を説明し、商品のリストを表示するためにProductControllerのindexメソッドからビューproducts.indexに商品データの配列を渡すコード例を書いてください。
+
+### 方法の説明
+
+compact()などを使うことで、View側ではController側で作成した変数を渡すことが可能になる。（今回はこれを使用する方法）
+
+### 変更・追加したファイル、処理
+
+
+・app/Http/Controllers/ProductController.php　を作成し以下を追加
+
+````
+namespace App\Http\Controllers;
+
+
+class ProductController extends Controller{
+    // 小テスト３用
+    public function index(){
+        $items = [
+            'マイク', 'コンセント', 'コード'
+        ];
+
+        return view('products.index', compact('items'));
+    }
+}
+````
+
+・resources/views/products/index.php　を作成し以下を追加
+
+````
+<x-app-layout>
+    <x-slot name="header">
+        <h2>
+            {{ __('products.indexですよ') }}
+        </h2>
+    </x-slot>
+
+    <div class="">
+        @foreach($items as $item)
+            <ul>
+                <li>{{$item}}</li>
+            </ul>
+        @endforeach
+    </div>
+
+</x-app-layout>
+
+````
 
 ### 結果
-
-<img src="public/images/Laravel_minitest_section02_before.png">
-<img src="public/images/Laravel_minitest_section02_after.png">
-
-
-## ログイン後のリダイレクト先の変更
-
-今回編集・追加したファイル
-
-・app/Providers/RouteServiceProvider.php　でリダイレクト先を変更
-
-・routes/web.php でルーティングの設定
-
-・resources/views/にhome.blade.php（任意のリダイレクト先）を追加
-
-### 結果
-
-<img src="public/images/Laravel_minitest_section02.png">
+<img src="public/images/03/Laravel_minitest_03.png">
